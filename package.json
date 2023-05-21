@@ -1,0 +1,23 @@
+{
+  "name": "midjourney-manager",
+  "version": "1.0.1",
+  "description": "",
+  "main": "mj-downloader.js",
+  "scripts": {
+    "start": "node mj-downloader.js"
+  },
+  "keywords": [],
+  "author": "Shaun Pedicini",
+  "license": "MIT",
+  "dependencies": {
+    "dotenv": "^16.0.3",
+    "file-type": "^18.4.0",
+    "node-fetch": "^3.3.1",
+    "pngjs": "^7.0.0"
+  },
+  "type": "module",
+  "devDependencies": {
+    "@jest/globals": "^29.5.0",
+    "jest": "^29.5.0"
+  }
+}
