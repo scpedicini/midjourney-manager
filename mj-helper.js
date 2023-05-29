@@ -18,7 +18,7 @@
  * @property {string} id - job id
  * @property {string} enqueue_time - time job was enqueued
  * @property {string} prompt - prompt for the job
- * @property {string} full_command - full command used to generate the job
+ * @property {string} full_command - full command used to generate the job (includes command flags such as --style and --seed)
  * @property {string[]} image_paths - list of image paths
  * @property {string} platform_channel_id - platform channel id
  * @property {string} platform_message_id - platform message id
@@ -57,19 +57,23 @@ function shrinkFileNameLength(nameComponents, fileExt, maxLength) {
     return retValue;
 }
 
+function replaceOSReservedWith(filename, replacement) {
+    //return filename.replace(/[/\\?%*:|"<>]/g, replacement);
+    return filename.replace(/[<>:"/\\|?*\x00-\x1F~^&;${}()\[\]`#' ]/g, replacement);
+}
 
 /**
  *
  * @param {string} filePath
  * @param {string[]} fileComponents
  * @param {string} fileExt
- * @return {string}
+ * @return {string} - a unique filename that does not exist in the filePath (excluding the path, e.g. "myFile.png")
  */
 function generateUniqueFilename(filePath, fileComponents, fileExt) {
     // sanitize filePrefix if it contains any OS reserved characters
-    fileComponents = fileComponents.map(f => f.replace(/[/\\?%*:|"<>]/g, '-'));
+    fileComponents = fileComponents.map(f => replaceOSReservedWith(f, '-'));
 
-    const MAX_FILE_NAME_LENGTH = 240;
+    const MAX_FILE_NAME_LENGTH = 225; // shrank from 240 to be safe
 
     // generate a unique filename, if file exists locally, append a number to the end
     let fileName = shrinkFileNameLength(fileComponents, fileExt, MAX_FILE_NAME_LENGTH);

@@ -2,7 +2,7 @@ import fetch from 'node-fetch';
 import {readFileSync, existsSync, unlinkSync} from "fs";
 import {writeFile} from 'fs/promises'
 import path from "path";
-import dotenv from 'dotenv';
+import dotenv, {config} from 'dotenv';
 import {
     createGridUsingBitBlt,
     createPngFromBuffer,
@@ -56,12 +56,31 @@ function cleanup() {
     term.off('key', keyHandlerFunction);
 }
 
-async function verifyConfig() {
-    let prevConfigData = existsSync(configFile) ? JSON.parse(readFileSync(configFile, 'utf8')) : {
+function getPreviousConfig() {
+    let stockConfigData = {
         cookie: '',
         userId: '',
-        outputLocation: process.argv[2] || process.cwd()
-    };
+        outputLocation: process.argv[2] || process.cwd(),
+        createSidecarJson: false
+    }
+
+    try {
+        if (existsSync(configFile)) {
+            const prevConfigData = JSON.parse(readFileSync(configFile, 'utf8'));
+            stockConfigData = {
+                ...stockConfigData,
+                ...prevConfigData
+            }
+        }
+    } catch (e) {
+
+    }
+
+    return stockConfigData;
+}
+
+async function verifyConfig() {
+    const prevConfigData = getPreviousConfig();
 
     print(`Current configuration, press enter to skip and keep current value\n`);
     print(`\nUser Id: (Currently: ${prevConfigData.userId})`);
@@ -87,6 +106,10 @@ async function verifyConfig() {
     } else {
         configData.outputLocation = prevConfigData.outputLocation;
     }
+
+    print(`\nWould you like to create sidecar JSON files for every image downloaded? (y/n) (Currently: ${prevConfigData.createSidecarJson})`);
+    const answer = await term.yesOrNo({yes: ['y', 'Y', 'ENTER'], no: ['n', 'N']}).promise
+    configData.createSidecarJson = answer;
 
     hashFile = path.join(configData.outputLocation, 'downloaded.json');
 
@@ -166,6 +189,7 @@ async function downloadMidjourneyAllImages() {
                 const id = result?.id; // the job id, e.g. 16ece578-e17e-4b0d-a915-8a8c7b567db1
                 // an array of images from the MJ CDN, e.g. ["https://cdn.midjourney.com/26ece478-e17e-4b0d-a915-8a8c7b567db1/0_0.png"]
                 const image_paths = result?.image_paths;
+                // Basic prompt truncated to 225 characters
                 const prompt_basic = result.prompt?.substring(0, 225) ?? "empty prompt";
                 const prompt_detail = result?.full_command;
                 const local_buffers = [];
@@ -198,10 +222,7 @@ async function downloadMidjourneyAllImages() {
 
                         throwIfUndefinedOrNull(id, image_paths, prompt_basic, prompt_detail);
                         spinner = await term.spinner('lineSpinner');
-                        term(` Downloading prompt ${new Date(result.enqueue_time).toLocaleString()}: ${prompt_basic}\n`);
-                        //term.blue();
-                        //term.blue(false);
-                        //term('\n');
+                        term(` Downloading prompt ${new Date(result.enqueue_time.endsWith('Z') ? result.enqueue_time : `${result.enqueue_time}Z`).toLocaleString()}: ${prompt_basic}\n`);
 
                         const is_collage = image_paths.length > 1;
 
@@ -217,19 +238,21 @@ async function downloadMidjourneyAllImages() {
                             local_buffers.push(buffer);
                         }
 
-                        let localFileName = generateUniqueFilename(configData.outputLocation, [`${dateFilePrefix}${prompt_basic}`], 'png');
-
+                        let localFileName;
+                        let sidecarFileName;
                         let pngObj;
                         if (is_collage) {
                             localFileName = generateUniqueFilename(configData.outputLocation, [`${dateFilePrefix}${prompt_basic}`, '_collage'], 'png');
+                            sidecarFileName = generateUniqueFilename(configData.outputLocation, [localFileName], 'json');
                             pngObj = await createGridUsingBitBlt(local_buffers);
                         } else {
+                            localFileName = generateUniqueFilename(configData.outputLocation, [`${dateFilePrefix}${prompt_basic}`], 'png');
+                            sidecarFileName = generateUniqueFilename(configData.outputLocation, [localFileName], 'json');
                             pngObj = await createPngFromBuffer(local_buffers[0]);
                         }
 
                         localFileName = path.join(configData.outputLocation, localFileName);
-
-
+                        sidecarFileName = path.join(configData.outputLocation, sidecarFileName);
 
                         const tags = {}
 
@@ -269,9 +292,15 @@ async function downloadMidjourneyAllImages() {
                         const imageBuffer = readFileSync(localFileName);
                         const pngTester = PNG.sync.read(imageBuffer);
 
+                        // write the sidecar file
+                        if (configData.createSidecarJson) {
+                            await writeFile(sidecarFileName, JSON.stringify(result, null, 4), 'utf8');
+                        }
+
                         // check that the image is the same size as the original
                         if (pngTester.width !== oldWidth || pngTester.height !== oldHeight) {
                             unlinkSync(localFileName);
+                            unlinkSync(sidecarFileName);
                             throw new Error(`EXIF tag write resulted in corruption, skipping downloading of job id ${id} with prompt: ${prompt_basic}`);
                         }
 
@@ -286,7 +315,10 @@ async function downloadMidjourneyAllImages() {
                     await writeFile(hashFile, json, 'utf8');
                     printError(`Error downloading id ${id} - ${prompt_basic} ${e.message}`);
                 } finally {
-                    try { await spinner.animate(false); } catch (e) { }
+                    try {
+                        await spinner.animate(false);
+                    } catch (e) {
+                    }
                 }
             }
             printBold(`Saving midjourney IDs down to disk - total successful downloads: ${totalDownloads}`);
