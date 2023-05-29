@@ -22,12 +22,11 @@ const {terminal: term} = terminalKitPackage;
  * Procedure for using mass midjournal downloader:
  * 1. Create a folder in your local machine to store the downloaded files.
  * 2. Navigate to https://www.midjourney.com/app and login.
- * 3. Monitor network requests
- * 4. Copy the cookie from https://www.midjourney.com/api/app/recent-jobs/?amount=50...
- * 5. Paste the cookie into MIDJOURNEY_COOKIE environment variable.
+ * 3. Open the Chrome/Firefox Developer Console (F12)
+ * 4. Copy the __Secure-next-auth.session-token cookie from https://www.midjourney.com/app
  * 6. Run the script.
  *
- * Exiftool should get installed as part of the vendored NPM package.
+ * Exiftool is included as part of the vendored NPM package.
  */
 
 // use dotenv to load environment variables from .env file
@@ -58,7 +57,7 @@ function cleanup() {
 
 function getPreviousConfig() {
     let stockConfigData = {
-        cookie: '',
+        sessionToken: '',
         userId: '',
         outputLocation: process.argv[2] || process.cwd(),
         createSidecarJson: false
@@ -91,12 +90,12 @@ async function verifyConfig() {
         configData.userId = prevConfigData.userId;
     }
 
-    print(`\nCookie: (Currently: ${prevConfigData.cookie})`);
-    const newCookie = await term.inputField().promise
-    if (newCookie.length > 0) {
-        configData.cookie = newCookie;
+    print(`\n__Secure-next-auth.session-token Cookie from https://midjourney.com/app (Currently: ${prevConfigData.sessionToken})`);
+    const newSessionToken = await term.inputField().promise
+    if (newSessionToken.length > 0) {
+        configData.sessionToken = newSessionToken;
     } else {
-        configData.cookie = prevConfigData.cookie;
+        configData.sessionToken = prevConfigData.sessionToken;
     }
 
     print(`\nOutput Location: (Currently: ${prevConfigData.outputLocation})`);
@@ -108,20 +107,21 @@ async function verifyConfig() {
     }
 
     print(`\nWould you like to create sidecar JSON files for every image downloaded? (y/n) (Currently: ${prevConfigData.createSidecarJson})`);
-    const answer = await term.yesOrNo({yes: ['y', 'Y', 'ENTER'], no: ['n', 'N']}).promise
+    const answer = await term.yesOrNo({yes: ['y', 'Y'], no: ['n', 'N']}).promise
     configData.createSidecarJson = answer;
 
     hashFile = path.join(configData.outputLocation, 'downloaded.json');
 
-    await updateConfigFile(configData.cookie, configData.userId, configData.outputLocation);
+    await updateConfigFile(configData.sessionToken, configData.userId, configData.outputLocation, configData.createSidecarJson);
 }
 
-async function updateConfigFile(cookieData, userId, outputLocation) {
+async function updateConfigFile(sessionToken, userId, outputLocation, createSidecarJson) {
     const configFile = path.join(workingDir, 'config.json');
     const configData = {
-        cookie: cookieData,
+        sessionToken: sessionToken,
         userId: userId,
-        outputLocation: outputLocation
+        outputLocation: outputLocation,
+        createSidecarJson: createSidecarJson
     };
     await writeFile(configFile, JSON.stringify(configData, null, 4), 'utf8');
 }
@@ -171,7 +171,7 @@ async function downloadMidjourneyAllImages() {
         const jsonUrlTemplate = jsonUrlTemplateNewest;
         let spinner;
 
-        const response = await fetch(jsonUrlTemplate, {headers: createHeaderBlock(configData.cookie)});
+        const response = await fetch(jsonUrlTemplate, {headers: createHeaderBlock(configData.sessionToken)});
         if (response.ok) {
             /** @type {JobResult[]} */
             const results = await response.json();
@@ -293,7 +293,7 @@ async function downloadMidjourneyAllImages() {
                         const pngTester = PNG.sync.read(imageBuffer);
 
                         // write the sidecar file
-                        if (configData.createSidecarJson) {
+                        if (configData.createSidecarJson === true) {
                             await writeFile(sidecarFileName, JSON.stringify(result, null, 4), 'utf8');
                         }
 
@@ -326,7 +326,7 @@ async function downloadMidjourneyAllImages() {
             await writeFile(hashFile, json, 'utf8');
         } else if (response.status === 403) {
             // cookie is likely invalid or expired
-            printError(`Forbidden error likely due to an invalid or expired cookie.`);
+            printError(`Forbidden error likely due to an invalid or expired session token cookie.`);
             await verifyConfig();
             i--;
         }

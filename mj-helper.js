@@ -86,7 +86,7 @@ function generateUniqueFilename(filePath, fileComponents, fileExt) {
 }
 
 
-function createHeaderBlock(cookie) {
+function createHeaderBlock(session_token) {
     const headers = {
         "accept": "*/*",
         "accept-language": "en-US,en;q=0.9",
@@ -96,7 +96,7 @@ function createHeaderBlock(cookie) {
         "sec-fetch-mode": "cors",
         "sec-fetch-site": "same-origin",
         "sec-gpc": "1",
-        "cookie": cookie,
+        "cookie": `__Secure-next-auth.session-token=${session_token}`,
         "Referer": "https://www.midjourney.com/app/",
         "Referrer-Policy": "strict-origin-when-cross-origin"
     };

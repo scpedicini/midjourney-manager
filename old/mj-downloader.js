@@ -37,7 +37,7 @@ if (!process.env['USER_ID']) {
 
 const outputDir = process.argv[2] || process.cwd();
 const hashFile = path.join(outputDir, 'downloaded.json');
-const cookie = process.env['MIDJOURNEY_COOKIE'];
+const sessionToken = process.env['MIDJOURNEY_COOKIE'];
 
 const DOWNLOAD_MODE = true;
 
@@ -118,7 +118,7 @@ async function downloadMidjourneyAllImages() {
 
         const jsonUrlTemplate = jsonUrlTemplateNewest;
 
-        const response = await fetch(jsonUrlTemplate, { headers: createHeaderBlock(cookie) });
+        const response = await fetch(jsonUrlTemplate, { headers: createHeaderBlock(sessionToken) });
         if (response.ok) {
             /** @type {JobResult[]} */
             const results = await response.json();
