@@ -1,7 +1,6 @@
 import fetch from 'node-fetch';
-import {createWriteStream, readFileSync, existsSync, unlinkSync, readdirSync} from "fs";
+import {readFileSync, existsSync, unlinkSync} from "fs";
 import {writeFile} from 'fs/promises'
-import {pipeline} from "stream/promises";
 import {fileTypeFromFile} from 'file-type';
 import path from "path";
 import { execSync } from 'child_process';
@@ -20,6 +19,7 @@ import { execSync } from 'child_process';
 
 // use dotenv to load environment variables from .env file
 import dotenv from 'dotenv';
+import {fetchBinary} from "./utils.js";
 dotenv.config();
 
 // verify we have process env vars for MIDJOURNEY_COOKIE and USER_ID
@@ -66,19 +66,6 @@ const DOWNLOAD_MODE = true;
  * @property {string} platform_message_id - platform message id
  */
 
-
-
-async function fetchBinary(url, local_file) {
-    const response = await fetch(url);
-
-    if (!response.ok) {
-        throw new Error(`unexpected response ${response.statusText}`);
-    }
-
-    const ws = createWriteStream(local_file);
-    const pipeline_promise = await pipeline(response.body, ws);
-    return pipeline_promise;
-}
 
 async function isFileAnImage(file) {
     const buffer = await fileTypeFromFile(file);
