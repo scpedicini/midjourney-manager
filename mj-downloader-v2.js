@@ -152,7 +152,7 @@ async function verifyConfig() {
         outputLocation: process.argv[2] || process.cwd()
     };
 
-    term(`Current configuration, press enter to keep current value\n`);
+    term(`Current configuration, press enter to skip and keep current value\n`);
     term(`\nUser Id: (Currently: ${prevConfigData.userId})\n`);
     const newUserId = await term.inputField().promise
     if (newUserId.length > 0) {
@@ -290,17 +290,17 @@ async function downloadMidjourneyAllImages() {
                             local_buffers.push(buffer);
                         }
 
-                        let localFileName = generateUniqueFilename(outputDir, [`${dateFilePrefix}${prompt_basic}`], 'png');
+                        let localFileName = generateUniqueFilename(configData.outputLocation, [`${dateFilePrefix}${prompt_basic}`], 'png');
 
                         let pngObj;
                         if (is_collage) {
-                            localFileName = generateUniqueFilename(outputDir, [`${dateFilePrefix}${prompt_basic}`, '_collage'], 'png');
+                            localFileName = generateUniqueFilename(configData.outputLocation, [`${dateFilePrefix}${prompt_basic}`, '_collage'], 'png');
                             pngObj = await createGridUsingBitBlt(local_buffers);
                         } else {
                             pngObj = await createPngFromBuffer(local_buffers[0]);
                         }
 
-                        localFileName = path.join(outputDir, localFileName);
+                        localFileName = path.join(configData.outputLocation, localFileName);
 
                         console.log(`Downloaded prompt ${result.enqueue_time}: ${prompt_basic}`);
                         const tags = { }
