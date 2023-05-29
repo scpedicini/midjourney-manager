@@ -11,8 +11,16 @@ function debugLog(...args) {
     }
 }
 
-function print(...args) {
-    term(`${args.join()}\n`);
+function print(text) {
+    term(`${text}\n`);
+}
+
+function printError(text) {
+    term.error(`${text}\n`);
+}
+
+function printBold(text) {
+    term.bold(`${text}\n`);
 }
 
 /**
@@ -122,5 +130,7 @@ export {
     createGridUsingBitBlt,
     createPngFromBuffer,
     writePngToFile,
-    print
+    print,
+    printError,
+    printBold,
 }

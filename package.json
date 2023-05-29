@@ -4,8 +4,8 @@
   "description": "",
   "scripts": {
     "start": "node mj-downloader.js",
-    "linux-build": "npx caxa --input . --output \"mj-downloader\" -- \"{{caxa}}/node_modules/.bin/node\" \"{{caxa}}/mj-downloader-v2.js\"",
-    "win-build": "npx caxa --input . --output \"mj-downloader.exe\" -- \"{{caxa}}/node_modules/.bin/node\" \"{{caxa}}/mj-downloader-v2.js\""
+    "linux-build": "npx caxa --input . --output \"mj-downloader\" -- \"{{caxa}}/node_modules/.bin/node\" --no-deprecation \"{{caxa}}/mj-downloader-v2.js\"",
+    "win-build": "npx caxa --input . --output \"mj-downloader.exe\" -- \"{{caxa}}/node_modules/.bin/node\" --no-deprecation \"{{caxa}}/mj-downloader-v2.js\""
   },
   "keywords": [],
   "author": "Shaun Pedicini",

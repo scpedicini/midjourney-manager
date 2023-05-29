@@ -9,12 +9,15 @@ import {
     fetchAsBuffer,
     sleep,
     throwIfUndefinedOrNull,
-    writePngToFile
+    writePngToFile,
+    print, printError, printBold
 } from "./utils.js";
-import { exiftool }  from "exiftool-vendored";
+import {exiftool} from "exiftool-vendored";
 import {PNG} from "pngjs";
 import terminalKitPackage from 'terminal-kit';
-const { terminal: term  } = terminalKitPackage;
+import {createHeaderBlock, generateUniqueFilename} from "./mj-helper.js";
+
+const {terminal: term} = terminalKitPackage;
 /**
  * Procedure for using mass midjournal downloader:
  * 1. Create a folder in your local machine to store the downloaded files.
@@ -30,119 +33,27 @@ const { terminal: term  } = terminalKitPackage;
 // use dotenv to load environment variables from .env file
 dotenv.config();
 
-// verify we have process env vars for MIDJOURNEY_COOKIE and USER_ID
-// if (!process.env['MIDJOURNEY_COOKIE']) {
-//     console.log('MIDJOURNEY_COOKIE environment variable not set');
-//     process.exit(1);
-// }
-
-// if (!process.env['USER_ID']) {
-//     console.log('USER_ID environment variable not set');
-//     process.exit(1);
-// }
-
 const workingDir = process.cwd();
 const configFile = path.join(workingDir, 'config.json');
-const configData = { };
+const configData = {};
 let hashFile = '';
 const DOWNLOAD_MODE = true;
+let EXIT_PROGRAM = false;
 
-
-// JS documentation
-
-/**
- * Result from exiftool
- * @typedef {Object} ExifToolResult
- * @property {string} SourceFile - the file path including the file name and folder
- * @property {string} FileName - the file name (without folder)
- * @property {string} [Description] - the description (optional), e.g. "a watercolor painting of a tree"
- * @property {string} [Keywords] - the keywords (optional)
- * @property {string} [Subject] - the subject (optional), e.g. Midjourney Job Id: 134460e9-cb4f-4446-bdfd-d1651b840c80
- * @property {string} [Author] - the author (optional), e.g. https://discord.com/@me/{platform_channel_id}/{platform_message_id}
- */
-
-/**
- * Result from https://www.midjourney.com/api/app/recent-jobs/?amount=50&offset=0
- * @typedef {Object} JobResult
- * @property {string} id - job id
- * @property {string} enqueue_time - time job was enqueued
- * @property {string} prompt - prompt for the job
- * @property {string} full_command - full command used to generate the job
- * @property {string[]} image_paths - list of image paths
- * @property {string} platform_channel_id - platform channel id
- * @property {string} platform_message_id - platform message id
- */
-
-
-/**
- *
- * @param {string[]} nameComponents
- * @param {string} fileExt
- * @param {number} maxLength
- * @return {string}
- */
-function shrinkFileNameLength(nameComponents, fileExt, maxLength) {
-    // if the combined length of the name components + file extension is greater than the max length,
-    // truncate the first name component so that the combined length is less than the max length
-
-    let retValue = `${nameComponents.join('')}`;
-    if (fileExt.length > 0) {
-        fileExt = `.${fileExt}`;
-        retValue += `${fileExt}`;
+const keyHandlerFunction = function (key, matches, data) {
+    if (!EXIT_PROGRAM && (key === 'ESCAPE' || (process.env.DEBUG && key === 'Q'))) {
+        term.bold.red.blink('\n\n *Please wait - downloader is exiting...\n')
+        EXIT_PROGRAM = true;
+        cleanup();
     }
-
-    if (retValue.length > maxLength) {
-        const firstComponent = nameComponents[0];
-        const remainingComponents = nameComponents.slice(1);
-        const remainingLength = maxLength - remainingComponents.reduce((a, b) => a + b.length, 0) - fileExt.length;
-        const truncatedFirstComponent = firstComponent.substring(0, remainingLength);
-        retValue = `${truncatedFirstComponent}${remainingComponents.join('')}${fileExt}`;
-    }
-    ``
-
-    return retValue;
 }
 
+term.grabInput({mouse: 'button'}); // This starts listening for input events.
+term.on('key', keyHandlerFunction);
 
-/**
- *
- * @param {string} filePath
- * @param {string[]} fileComponents
- * @param {string} fileExt
- * @return {string}
- */
-function generateUniqueFilename(filePath, fileComponents, fileExt) {
-    // sanitize filePrefix if it contains any OS reserved characters
-    fileComponents = fileComponents.map(f => f.replace(/[/\\?%*:|"<>]/g, '-'));
-
-    const MAX_FILE_NAME_LENGTH = 240;
-
-    // generate a unique filename, if file exists locally, append a number to the end
-    let fileName = shrinkFileNameLength(fileComponents, fileExt, MAX_FILE_NAME_LENGTH);
-    let fileNameIndex = 1;
-    while (existsSync(path.join(filePath, fileName))) {
-        fileName = shrinkFileNameLength([...fileComponents, `${fileNameIndex}`], fileExt, MAX_FILE_NAME_LENGTH);
-        fileNameIndex++;
-    }
-    return fileName;
-}
-
-
-function createHeaderBlock() {
-    const headers = {
-        "accept": "*/*",
-        "accept-language": "en-US,en;q=0.9",
-        "cache-control": "no-cache",
-        "pragma": "no-cache",
-        "sec-fetch-dest": "empty",
-        "sec-fetch-mode": "cors",
-        "sec-fetch-site": "same-origin",
-        "sec-gpc": "1",
-        "cookie": configData.cookie,
-        "Referer": "https://www.midjourney.com/app/",
-        "Referrer-Policy": "strict-origin-when-cross-origin"
-    };
-    return headers;
+function cleanup() {
+    term.grabInput(false);
+    term.off('key', keyHandlerFunction);
 }
 
 async function verifyConfig() {
@@ -152,8 +63,8 @@ async function verifyConfig() {
         outputLocation: process.argv[2] || process.cwd()
     };
 
-    term(`Current configuration, press enter to skip and keep current value\n`);
-    term(`\nUser Id: (Currently: ${prevConfigData.userId})\n`);
+    print(`Current configuration, press enter to skip and keep current value\n`);
+    print(`\nUser Id: (Currently: ${prevConfigData.userId})`);
     const newUserId = await term.inputField().promise
     if (newUserId.length > 0) {
         configData.userId = newUserId;
@@ -161,7 +72,7 @@ async function verifyConfig() {
         configData.userId = prevConfigData.userId;
     }
 
-    term(`\nCookie: (Currently: ${prevConfigData.cookie})\n`);
+    print(`\nCookie: (Currently: ${prevConfigData.cookie})`);
     const newCookie = await term.inputField().promise
     if (newCookie.length > 0) {
         configData.cookie = newCookie;
@@ -169,7 +80,7 @@ async function verifyConfig() {
         configData.cookie = prevConfigData.cookie;
     }
 
-    term(`\nOutput Location: (Currently: ${prevConfigData.outputLocation})\n`);
+    print(`\nOutput Location: (Currently: ${prevConfigData.outputLocation})`);
     const newOutputLocation = await term.inputField().promise
     if (newOutputLocation.length > 0) {
         configData.outputLocation = newOutputLocation;
@@ -199,14 +110,18 @@ async function downloadMidjourneyAllImages() {
     // verify that exiftool is installed
     const exifVersion = await exiftool.version();
     if (isNaN(parseFloat(exifVersion))) {
-        console.log('exiftool not found');
+        print('exiftool not found');
         process.exit(1);
     }
 
     let setDownloaded;
-    if (existsSync(hashFile)) {
-        setDownloaded = new Set(JSON.parse(readFileSync(hashFile, 'utf8')));
-    } else {
+    try {
+        if (existsSync(hashFile)) {
+            setDownloaded = new Set(JSON.parse(readFileSync(hashFile, 'utf8')));
+        } else {
+            setDownloaded = new Set();
+        }
+    } catch (e) {
         setDownloaded = new Set();
     }
 
@@ -215,8 +130,10 @@ async function downloadMidjourneyAllImages() {
 
     // last pageNumber = 1834
     let totalDownloads = 0;
-    let totalImages = 0;
     for (let i = 0; i <= 60; i++) {
+        if (EXIT_PROGRAM) {
+            break;
+        }
 
 
         // each of these URLs returns at most 50 jobs each consisting of 50 images (2500 images)
@@ -229,19 +146,23 @@ async function downloadMidjourneyAllImages() {
             `https://www.midjourney.com/api/app/recent-jobs/?amount=50&jobType=null&orderBy=oldest&user_id_ranked_score=null&jobStatus=completed&userId=${configData.userId}&dedupe=true&refreshApi=0&page=${i}`;
 
         const jsonUrlTemplate = jsonUrlTemplateNewest;
+        let spinner;
 
-        const response = await fetch(jsonUrlTemplate, {headers: createHeaderBlock()});
+        const response = await fetch(jsonUrlTemplate, {headers: createHeaderBlock(configData.cookie)});
         if (response.ok) {
             /** @type {JobResult[]} */
             const results = await response.json();
 
             if ((results.length === 0) || (results.length === 1 && results[0]?.msg?.toLowerCase()?.includes('no jobs found'))) {
-                console.log(`No results for page ${i}`);
+                print(`No results for page ${i}`);
                 continue;
             }
 
             for (const result of results) {
-                totalImages++;
+                if (EXIT_PROGRAM) {
+                    break;
+                }
+
                 const id = result?.id; // the job id, e.g. 16ece578-e17e-4b0d-a915-8a8c7b567db1
                 // an array of images from the MJ CDN, e.g. ["https://cdn.midjourney.com/26ece478-e17e-4b0d-a915-8a8c7b567db1/0_0.png"]
                 const image_paths = result?.image_paths;
@@ -261,13 +182,13 @@ async function downloadMidjourneyAllImages() {
                         if(exifImageData && !exifImageData.Author) {
                             const localFile = exifImageData.SourceFile;
                             // embed this link as an exif comment in the image
-                            console.log(`Embedding discord link in ${localFile}`);
+                            print(`Embedding discord link in ${localFile}`);
                             writeImageIPTCDetails(localFile, "Author", discord_url);
                         }
 
                     } else {
                         discordLinksNotFound++;
-                        console.log(`No Discord URL, number of discord links not found: ${discordLinksNotFound}`);
+                        print(`No Discord URL, number of discord links not found: ${discordLinksNotFound}`);
                     }*/
 
                     if (!DOWNLOAD_MODE)
@@ -276,6 +197,12 @@ async function downloadMidjourneyAllImages() {
                     if (!setDownloaded.has(id)) {
 
                         throwIfUndefinedOrNull(id, image_paths, prompt_basic, prompt_detail);
+                        spinner = await term.spinner('lineSpinner');
+                        term(` Downloading prompt ${new Date(result.enqueue_time).toLocaleString()}: ${prompt_basic}\n`);
+                        //term.blue();
+                        //term.blue(false);
+                        //term('\n');
+
                         const is_collage = image_paths.length > 1;
 
                         const isoTimeCreated = result.enqueue_time;
@@ -302,8 +229,9 @@ async function downloadMidjourneyAllImages() {
 
                         localFileName = path.join(configData.outputLocation, localFileName);
 
-                        console.log(`Downloaded prompt ${result.enqueue_time}: ${prompt_basic}`);
-                        const tags = { }
+
+
+                        const tags = {}
 
                         // write IPTC keywords to image
                         // writeIPTCAsTextChunkToPng(pngObj, "Description", prompt_detail);
@@ -349,28 +277,30 @@ async function downloadMidjourneyAllImages() {
 
                         setDownloaded.add(id);
                         totalDownloads++;
-                        await sleep(250);
+                        await sleep(100);
                     } else {
-                        console.log(`Already fetched midjourney image for ${id} and ${prompt_basic} ${image_paths.join(', ')}`);
+                        print(`Already fetched midjourney image for ${id} and ${prompt_basic} ${image_paths.join(', ')}`);
                     }
                 } catch (e) {
                     const json = JSON.stringify(Array.from(setDownloaded));
                     await writeFile(hashFile, json, 'utf8');
-                    console.log(`Error downloading id ${id} - ${prompt_basic} ${e.message}`);
+                    printError(`Error downloading id ${id} - ${prompt_basic} ${e.message}`);
+                } finally {
+                    try { await spinner.animate(false); } catch (e) { }
                 }
             }
-            console.log(`Saving midjourney ids down to disk - total downloads: ${totalDownloads}, total images: ${totalImages}`);
+            printBold(`Saving midjourney IDs down to disk - total successful downloads: ${totalDownloads}`);
             const json = JSON.stringify(Array.from(setDownloaded));
             await writeFile(hashFile, json, 'utf8');
-        } else if(response.status === 403) {
+        } else if (response.status === 403) {
             // cookie is likely invalid or expired
-            term.error(`Forbidden error likely due to an invalid or expired cookie.`);
+            printError(`Forbidden error likely due to an invalid or expired cookie.`);
             await verifyConfig();
             i--;
         }
     }
 
-    console.log(`Downloaded ${setDownloaded.size} images, total images: ${totalImages}`);
+    printBold(`Downloaded during this run: ${totalDownloads}, number of images processed over lifetime: ${setDownloaded.size}`);
 
     // serialize setDownloaded and write to file in working directory
     const json = JSON.stringify(Array.from(setDownloaded));
@@ -380,12 +310,25 @@ async function downloadMidjourneyAllImages() {
 
 (async () => {
     try {
+        let headerText = "Welcome to Midjourney Manager";
 
+        // Clear the terminal
+        term.clear();
+
+        // Move the cursor to the center of the terminal, horizontally
+        term.moveTo(Math.round(term.width / 2 - headerText.length / 2), 1);
+
+        // Print the header
+        term.bold.underline.green(headerText + '\n');
+
+        // Reset the terminal styles
+        // term.reset();
         await downloadMidjourneyAllImages();
-        console.log("Midjourney Batch downloading complete");
+        printBold("Midjourney downloading complete");
     } catch (e) {
-        console.error(e);
+        printError(`Unidentified error: ${e.message}`);
+        printError(`Consider filing a bug report at https://github.com/scpedicini/midjourney-manager/issues`);
     } finally {
-
+        process.exit(0);
     }
 })();
