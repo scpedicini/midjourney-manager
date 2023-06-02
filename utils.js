@@ -120,6 +120,21 @@ async function isBufferAnImage(buffer) {
     return result?.mime?.startsWith('image/');
 }
 
+async function safeRunAsync(func) {
+    try {
+        await func();
+    } catch (e) {
+
+    }
+}
+
+function safeRunSync(func) {
+    try {
+        func();
+    } catch (e) {
+
+    }
+}
 
 export {
     sleep,
@@ -133,4 +148,6 @@ export {
     print,
     printError,
     printBold,
+    safeRunAsync,
+    safeRunSync,
 }

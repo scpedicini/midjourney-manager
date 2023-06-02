@@ -10,12 +10,15 @@ import {
     sleep,
     throwIfUndefinedOrNull,
     writePngToFile,
-    print, printError, printBold
+    print,
+    printError,
+    printBold
 } from "./utils.js";
 import {exiftool} from "exiftool-vendored";
 import {PNG} from "pngjs";
 import terminalKitPackage from 'terminal-kit';
 import {createHeaderBlock, generateUniqueFilename} from "./mj-helper.js";
+import {startPersistentMessage, stopPersistentMessage} from "./terminal-helper.js";
 
 const {terminal: term} = terminalKitPackage;
 /**
@@ -37,12 +40,18 @@ const configFile = path.join(workingDir, 'config.json');
 const configData = {};
 let hashFile = '';
 const DOWNLOAD_MODE = true;
-let EXIT_PROGRAM = false;
+
+const STATE_IDLE = 'idle';
+const STATE_DOWNLOADING = 'downloading';
+const STATE_USER_CONFIG = 'user-config';
+const STATE_EXITING = 'exiting';
+
+let currentState = STATE_IDLE;
 
 const keyHandlerFunction = function (key, matches, data) {
-    if (!EXIT_PROGRAM && (key === 'ESCAPE' || (process.env.DEBUG && key === 'Q'))) {
+    if (currentState === STATE_DOWNLOADING && (key === 'ESCAPE' || (process.env.DEBUG && key === 'Q'))) {
         term.bold.red.blink('\n\n *Please wait - downloader is exiting...\n')
-        EXIT_PROGRAM = true;
+        currentState = STATE_EXITING;
         cleanup();
     }
 }
@@ -128,7 +137,6 @@ async function updateConfigFile(sessionToken, userId, outputLocation, createSide
 
 async function downloadMidjourneyAllImages() {
 
-    await verifyConfig();
 
     // verify that exiftool is installed
     const exifVersion = await exiftool.version();
@@ -154,7 +162,7 @@ async function downloadMidjourneyAllImages() {
     // last pageNumber = 1834
     let totalDownloads = 0;
     for (let i = 0; i <= 60; i++) {
-        if (EXIT_PROGRAM) {
+        if (currentState === STATE_EXITING) {
             break;
         }
 
@@ -182,7 +190,7 @@ async function downloadMidjourneyAllImages() {
             }
 
             for (const result of results) {
-                if (EXIT_PROGRAM) {
+                if (currentState === STATE_EXITING) {
                     break;
                 }
 
@@ -327,7 +335,9 @@ async function downloadMidjourneyAllImages() {
         } else if (response.status === 403) {
             // cookie is likely invalid or expired
             printError(`Forbidden error likely due to an invalid or expired session token cookie.`);
+            currentState = STATE_USER_CONFIG;
             await verifyConfig();
+            currentState = STATE_DOWNLOADING;
             i--;
         }
     }
@@ -341,6 +351,8 @@ async function downloadMidjourneyAllImages() {
 
 
 (async () => {
+    let persistentMessageId = 0;
+
     try {
         let headerText = "Welcome to Midjourney Manager";
 
@@ -353,14 +365,22 @@ async function downloadMidjourneyAllImages() {
         // Print the header
         term.bold.underline.green(headerText + '\n');
 
+        currentState = STATE_USER_CONFIG;
+        await verifyConfig();
+        currentState = STATE_IDLE;
+
+        persistentMessageId = startPersistentMessage("Press Escape to Quit");
+
         // Reset the terminal styles
         // term.reset();
+        currentState = STATE_DOWNLOADING;
         await downloadMidjourneyAllImages();
         printBold("Midjourney downloading complete");
     } catch (e) {
         printError(`Unidentified error: ${e.message}`);
         printError(`Consider filing a bug report at https://github.com/scpedicini/midjourney-manager/issues`);
     } finally {
+        stopPersistentMessage(persistentMessageId);
         process.exit(0);
     }
 })();

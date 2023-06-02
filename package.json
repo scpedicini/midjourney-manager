@@ -1,10 +1,10 @@
 {
   "name": "midjourney-manager",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "",
   "scripts": {
-    "start": "node mj-downloader.js",
-    "linux-build": "npx caxa --input . --output \"mj-downloader\" -- \"{{caxa}}/node_modules/.bin/node\" --no-deprecation \"{{caxa}}/mj-downloader-v2.js\"",
+    "start": "node mj-downloader-v2.js",
+    "mac-build": "npx caxa --input . --output \"mj-downloader\" -- \"{{caxa}}/node_modules/.bin/node\" --no-deprecation \"{{caxa}}/mj-downloader-v2.js\"",
     "win-build": "npx caxa --input . --output \"mj-downloader.exe\" -- \"{{caxa}}/node_modules/.bin/node\" --no-deprecation \"{{caxa}}/mj-downloader-v2.js\""
   },
   "keywords": [],

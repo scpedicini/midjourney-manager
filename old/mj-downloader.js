@@ -19,8 +19,8 @@ import { execSync } from 'child_process';
 
 // use dotenv to load environment variables from .env file
 import dotenv from 'dotenv';
-import {fetchBinary, throwIfUndefinedOrNull} from "./utils.js";
-import {createHeaderBlock, generateUniqueFilename} from "./mj-helper.js";
+import {fetchBinary, safeRunAsync, throwIfUndefinedOrNull, sleep} from "../utils.js";
+import {createHeaderBlock, generateUniqueFilename} from "../mj-helper.js";
 dotenv.config();
 
 // verify we have process env vars for MIDJOURNEY_COOKIE and USER_ID
@@ -231,7 +231,7 @@ async function downloadMidjourneyAllImages() {
                     console.log(`Error downloading id of ${id} - ${e.message}`);
 
                     // clean up old files since we failed
-                    local_files.forEach(f => unlinkSync(f));
+                    local_files.forEach(f => safeRunAsync(() => unlinkSync(f)) );
                 }
             }
             console.log(`Saving midjourney ids down to disk - total downloads: ${totalDownloads}, total images: ${totalImages}`);
