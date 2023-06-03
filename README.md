@@ -68,7 +68,7 @@ Because you touch yourself at night. That's why.
 
 You'll need to open up the Security & Privacy settings and allow the app to run.
 
-![MacOS Security & Privacy](assets/gatekeep.jpg)
+![MacOS Security & Privacy](assets/gatekeep-warning.jpg)
 
 ## :construction_worker: Contributing
 
