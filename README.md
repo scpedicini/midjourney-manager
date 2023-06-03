@@ -1,4 +1,4 @@
-# Midjourney-Manager :rocket:
+# Midjourney-Manager 
 
 Welcome to Midjourney-Manager, your friendly command-line application for managing your generative images! Available for both Windows and Mac, this application is designed to help you keep track of your creations, download them and embed information about each image including the discord channel, the prompt used, the job ID, and more. It even downloads upscales and image collages aka the image grids for you! :framed_picture:
 
@@ -12,13 +12,13 @@ Welcome to Midjourney-Manager, your friendly command-line application for managi
 ## :exclamation: Limitations
 Due to the way that Midjourney's current profile works, it is impossible to search past the most recent 2500 generated images. Hence, we recommend you run this script on a daily/weekly basis to always ensure your work is backed up. :hourglass_flowing_sand:
 
-## :arrow_down: Getting Started
+## :rocket: Getting Started
 
 1. Under releases, download the version suitable for your OS (Win or Mac). We recommend placing this file in the directory where you'd like to have your images downloaded to. :file_folder:
 
 2. Before running the application, you'll need the following information:
-    - __Secure-next-auth.session-token (You can get this cookie from the Cookie tab in Chrome/Firefox developer console)
-    - User Id (Search for any call that says "user_id" in the Network tab. It should be in the form of GUID (e.g. XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX). Copy this value.
+    - `__Secure-next-auth.session-token` (You can get this cookie from the Cookie tab in Chrome/Firefox developer console. Watch the video tutorial below for more details)
+    - User Id (Search for any call that says "user_id" in the Network tab. It should be in the form of GUID (e.g. `XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX`). Copy this value.
 
 Please note that the session-token should be good for several weeks. When it expires, you will receive a warning message, and will need to grab the newest one from your browser.
 
