@@ -60,9 +60,9 @@ Sidecar files are 1-1 files that include information related to the generation o
 - Seed
 - etc
 
-### Why don't you download images in parallel?
+### Why aren't the images being downloaded in parallel?
 
-Because you touch yourself at night. That's why. :smirk:
+Because you touch yourself at night. That's why.
 
 ## :construction_worker: Contributing
 
