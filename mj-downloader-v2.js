@@ -375,9 +375,7 @@ async function downloadMidjourneyAllImages() {
     let persistentMessageId = 0;
 
     try {
-        const packageJsonData = JSON.parse(readFileSync('./package.json', 'utf8'));
-
-        let headerText = `Welcome to Midjourney Manager v${packageJsonData.version} `;
+        let headerText = `Welcome to Midjourney Manager v1.0.3`;
 
         // Clear the terminal
         term.clear();
