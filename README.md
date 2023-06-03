@@ -14,7 +14,7 @@ Due to the way that Midjourney's current profile works, it is impossible to sear
 
 ## :rocket: Getting Started
 
-1. Under releases, download the version suitable for your OS (Win or Mac). We recommend placing this file in the directory where you'd like to have your images downloaded to. :file_folder:
+1. Under releases, download the version suitable for your OS (Win or Mac). We recommend placing this file in the directory where you'd like to have your images downloaded to. :file_folder: Double-click to unzip the file which will be named `mj-downloader` or `mj-downloader.exe` depending on your OS.
 
 2. Before running the application, you'll need the following information:
     - `__Secure-next-auth.session-token` (You can get this cookie from the Cookie tab in Chrome/Firefox developer console. Watch the video tutorial below for more details)
@@ -24,7 +24,7 @@ Please note that the session-token should be good for several weeks. When it exp
 
 For detailed instructions, watch this [video tutorial](#) :movie_camera:
 
-You can run the CLI tool by either double-clicking on it, or by manually running the tool in a DOS prompt or terminal: `./mj-downloader` (for Mac) or `mj-downloader.exe` (for Windows).
+You can run the CLI tool by either double-clicking on it, or by manually running the tool in a DOS prompt or terminal: `./mj-downloader.Mac.zip` (for Mac) or `mj-downloader.exe` (for Windows).
 
 ## :hammer_and_wrench: Building Yourself
 
@@ -60,15 +60,26 @@ Sidecar files are 1-1 files that include information related to the generation o
 - Seed
 - etc
 
+### I can't run the tool, MacOS says it's from an unidentified developer.
+
+![MacOS Gatekeeper Warning](assets/gatekeep-warning.jpg)
+
+Unfortunately, MacOS requires that all applications be signed by an Apple Developer ID. Since the qualification process basically involves forking over money to Apple, I've chosen not to do this. As such, you have two options:
+
+1. Open up the Security & Privacy settings and manually allow the app to run.
+
+![MacOS Security & Privacy](assets/allow.jpg)
+
+2. You can also run the following command in your terminal to remove the quarantine flag from the file:
+
+```bash
+xattr -d com.apple.quarantine ./mj-downloader
+```
+
 ### Why aren't the images being downloaded in parallel?
 
 Because you touch yourself at night. That's why.
 
-### I can't run the tool, MacOS says it's from an unidentified developer.
-
-You'll need to open up the Security & Privacy settings and allow the app to run.
-
-![MacOS Security & Privacy](assets/gatekeep-warning.jpg)
 
 ## :construction_worker: Contributing
 
