@@ -64,6 +64,12 @@ Sidecar files are 1-1 files that include information related to the generation o
 
 Because you touch yourself at night. That's why.
 
+### I can't run the tool, MacOS says it's from an unidentified developer.
+
+You'll need to open up the Security & Privacy settings and allow the app to run.
+
+![MacOS Security & Privacy](assets/gatekeep.jpg)
+
 ## :construction_worker: Contributing
 
 If you have any issues, suggestions or general feedback, don't hesitate to reach out or submit a pull request. Happy downloading! :sparkles: :sparkles: :sparkles:
