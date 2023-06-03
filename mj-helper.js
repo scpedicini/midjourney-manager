@@ -22,6 +22,27 @@
  * @property {string[]} image_paths - list of image paths
  * @property {string} platform_channel_id - platform channel id
  * @property {string} platform_message_id - platform message id
+ * @property {Object} event - The event associated with the job
+ * @property {number} event.height - The height parameter of the event
+ * @property {Array<string>} event.textPrompt - The text prompts associated with the event
+ * @property {Array} event.imagePrompts - The image prompts associated with the event
+ * @property {number} event.width - The width parameter of the event
+ * @property {number} event.batchSize - The batch size parameter of the event
+ * @property {?Array<number>} event.textPromptWeights - An array of weights corresponding to the text prompts, if any
+ * @property {?string} event.seedImageURL - The URL of the seed image for the event, if any
+ * @property {string} event.eventType - The type of the event, such as "imagine"
+ * @property {boolean} event.test
+ */
+
+
+
+
+
+
+
+/**
+ * Metadata for a job
+ * @typedef {Object} JobMetadata
  */
 
 

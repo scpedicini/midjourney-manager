@@ -4,24 +4,8 @@ import fs, {createWriteStream} from "fs";
 import {pipeline} from "stream/promises";
 import {fileTypeFromBuffer} from "file-type";
 import terminalKitPackage from 'terminal-kit';
+import {debugLog} from "./terminal-helper.js";
 const { terminal: term  } = terminalKitPackage;
-function debugLog(...args) {
-    if (process.env.DEBUG) {
-        console.log(...args);
-    }
-}
-
-function print(text) {
-    term(`${text}\n`);
-}
-
-function printError(text) {
-    term.error(`${text}\n`);
-}
-
-function printBold(text) {
-    term.bold(`${text}\n`);
-}
 
 /**
  *
@@ -145,9 +129,6 @@ export {
     createGridUsingBitBlt,
     createPngFromBuffer,
     writePngToFile,
-    print,
-    printError,
-    printBold,
     safeRunAsync,
     safeRunSync,
 }

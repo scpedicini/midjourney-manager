@@ -5,7 +5,7 @@
   "scripts": {
     "start": "node mj-downloader-v2.js",
     "mac-build": "npx caxa --input . --exclude './mj-downloader' --exclude './mj-downloader.exe' --exclude './config.json' --exclude './.env' --output \"mj-downloader\" -- \"{{caxa}}/node_modules/.bin/node\" --no-deprecation \"{{caxa}}/mj-downloader-v2.js\"",
-    "win-build": "npx caxa --input . --exclude './mj-downloader' --exclude './mj-downloader.exe' --exclude './config.json' --exclude './.env' --output \"mj-downloader.exe\" -- \"{{caxa}}/node_modules/.bin/node\" --no-deprecation \"{{caxa}}/mj-downloader-v2.js\"",
+    "win-build": "npx caxa --input . --exclude 'mj-downloader' --exclude 'mj-downloader.exe' --exclude 'config.json' --exclude '.env' --output \"mj-downloader.exe\" -- \"{{caxa}}/node_modules/.bin/node\" --no-deprecation \"{{caxa}}/mj-downloader-v2.js\"",
     "clean": "rm -rf mj-downloader mj-downloader.exe"
   },
   "keywords": [

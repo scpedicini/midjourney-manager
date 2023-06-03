@@ -2,7 +2,7 @@ import terminalKitPackage from 'terminal-kit';
 import {safeRunAsync, safeRunSync} from "./utils.js";
 const {terminal: term} = terminalKitPackage;
 
-function printMessage(msg) {
+function printMenuMessage(msg) {
     // Save the current cursor position
     term.saveCursor();
 
@@ -22,8 +22,43 @@ function printMessage(msg) {
     term.restoreCursor();
 }
 
+
+
+function debugLog(...args) {
+    if (process.env.DEBUG) {
+        console.log(...args);
+    }
+}
+
+function printMaxWidth(text, maxWidth) {
+    // get the maximum width of the terminal
+
+    // if text is longer than max width, cut out the middle section and replace with ellipsis
+    if (text.length > maxWidth) {
+        const half = Math.floor(maxWidth / 2);
+        const firstHalf = text.substring(0, half - 2);
+        const secondHalf = text.substring(text.length - half + 2);
+        text = `${firstHalf}...${secondHalf}`;
+    }
+
+    print(text);
+}
+
+function print(text) {
+    term(`${text}\n`);
+}
+
+function printError(text) {
+    term.bold.red.error(`${text}\n`);
+}
+
+function printBold(text) {
+    term.bold(`${text}\n`);
+}
+
+
 function startPersistentMessage(msg) {
-    const intervalId = setInterval(() => printMessage(msg), 500);
+    const intervalId = setInterval(() => printMenuMessage(msg), 500);
     return intervalId;
 }
 
@@ -33,7 +68,12 @@ function stopPersistentMessage(intervalId) {
 
 
 export {
-    printMessage,
+    printMenuMessage,
     startPersistentMessage,
-    stopPersistentMessage
+    stopPersistentMessage,
+    print,
+    printError,
+    printBold,
+    debugLog,
+    printMaxWidth,
 }

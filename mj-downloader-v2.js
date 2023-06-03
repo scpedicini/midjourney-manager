@@ -6,19 +6,23 @@ import dotenv, {config} from 'dotenv';
 import {
     createGridUsingBitBlt,
     createPngFromBuffer,
-    fetchAsBuffer,
+    fetchAsBuffer, safeRunAsync,
     sleep,
     throwIfUndefinedOrNull,
     writePngToFile,
-    print,
-    printError,
-    printBold
 } from "./utils.js";
 import {exiftool} from "exiftool-vendored";
 import {PNG} from "pngjs";
 import terminalKitPackage from 'terminal-kit';
 import {createHeaderBlock, generateUniqueFilename} from "./mj-helper.js";
-import {startPersistentMessage, stopPersistentMessage} from "./terminal-helper.js";
+import {
+    print,
+    printBold,
+    printError,
+    printMaxWidth,
+    startPersistentMessage,
+    stopPersistentMessage
+} from "./terminal-helper.js";
 
 const {terminal: term} = terminalKitPackage;
 /**
@@ -44,23 +48,27 @@ const DOWNLOAD_MODE = true;
 const STATE_IDLE = 'idle';
 const STATE_DOWNLOADING = 'downloading';
 const STATE_USER_CONFIG = 'user-config';
-const STATE_EXITING = 'exiting';
+let EXITING = false;
 
 let currentState = STATE_IDLE;
 
 const keyHandlerFunction = function (key, matches, data) {
-    if (currentState === STATE_DOWNLOADING && (key === 'ESCAPE' || (process.env.DEBUG && key === 'Q'))) {
-        term.bold.red.blink('\n\n *Please wait - downloader is exiting...\n')
-        currentState = STATE_EXITING;
+
+    if ((key === 'ESCAPE' || (process.env.DEBUG && key === 'Q'))) {
+        term.bold.blue.blink('\n\n *Please wait - downloader is exiting...\n')
+        EXITING = true;
         cleanup();
+        if(currentState === STATE_USER_CONFIG) {
+            process.exit(0);
+        }
     }
 }
 
-term.grabInput({mouse: 'button'}); // This starts listening for input events.
+// term.grabInput({mouse: 'button'}); // This starts listening for input events.
 term.on('key', keyHandlerFunction);
 
 function cleanup() {
-    term.grabInput(false);
+    // term.grabInput(false);
     term.off('key', keyHandlerFunction);
 }
 
@@ -90,7 +98,8 @@ function getPreviousConfig() {
 async function verifyConfig() {
     const prevConfigData = getPreviousConfig();
 
-    print(`Current configuration, press enter to skip and keep current value\n`);
+    printBold(`Setup configuration (press enter to skip and keep current value)`);
+    printBold(`For details on how to setup the downloader, please visit https://github.com/scpedicini/midjourney-manager`);
     print(`\nUser Id: (Currently: ${prevConfigData.userId})`);
     const newUserId = await term.inputField().promise
     if (newUserId.length > 0) {
@@ -162,7 +171,7 @@ async function downloadMidjourneyAllImages() {
     // last pageNumber = 1834
     let totalDownloads = 0;
     for (let i = 0; i <= 60; i++) {
-        if (currentState === STATE_EXITING) {
+        if (EXITING) {
             break;
         }
 
@@ -190,7 +199,7 @@ async function downloadMidjourneyAllImages() {
             }
 
             for (const result of results) {
-                if (currentState === STATE_EXITING) {
+                if (EXITING) {
                     break;
                 }
 
@@ -198,7 +207,8 @@ async function downloadMidjourneyAllImages() {
                 // an array of images from the MJ CDN, e.g. ["https://cdn.midjourney.com/26ece478-e17e-4b0d-a915-8a8c7b567db1/0_0.png"]
                 const image_paths = result?.image_paths;
                 // Basic prompt truncated to 225 characters
-                const prompt_basic = result.prompt?.substring(0, 225) ?? "empty prompt";
+                const prompt_basic = (result.event?.textPrompt?.join(' ') ||
+                    result.prompt || "empty prompt").substring(0, 225);
                 const prompt_detail = result?.full_command;
                 const local_buffers = [];
 
@@ -229,8 +239,11 @@ async function downloadMidjourneyAllImages() {
                     if (!setDownloaded.has(id)) {
 
                         throwIfUndefinedOrNull(id, image_paths, prompt_basic, prompt_detail);
+                        // save term position of spinner so we can overwrite it later
+
+                        const position = await term.getCursorLocation();
                         spinner = await term.spinner('lineSpinner');
-                        term(` Downloading prompt ${new Date(result.enqueue_time.endsWith('Z') ? result.enqueue_time : `${result.enqueue_time}Z`).toLocaleString()}: ${prompt_basic}\n`);
+                        printMaxWidth(`  Downloading prompt ${new Date(result.enqueue_time.endsWith('Z') ? result.enqueue_time : `${result.enqueue_time}Z`).toLocaleString()}: ${prompt_basic}`, term.width);
 
                         const is_collage = image_paths.length > 1;
 
@@ -312,21 +325,28 @@ async function downloadMidjourneyAllImages() {
                             throw new Error(`EXIF tag write resulted in corruption, skipping downloading of job id ${id} with prompt: ${prompt_basic}`);
                         }
 
+                        await safeRunAsync(async () => await spinner.animate(false));
+                        // write a checkbox emoji in the terminal at the saved position
+                        term.saveCursor();
+                        term.moveTo(position.x, position.y - 1);
+                        term('✅');
+                        term.restoreCursor();
+
                         setDownloaded.add(id);
                         totalDownloads++;
                         await sleep(100);
                     } else {
-                        print(`Already fetched midjourney image for ${id} and ${prompt_basic} ${image_paths.join(', ')}`);
+                        print(`⏭️  Already fetched midjourney image for ${id} and ${prompt_basic} ${image_paths.join(', ')}`);
                     }
                 } catch (e) {
                     const json = JSON.stringify(Array.from(setDownloaded));
                     await writeFile(hashFile, json, 'utf8');
-                    printError(`Error downloading id ${id} - ${prompt_basic} ${e.message}`);
+                    printError(`❌  Error downloading id ${id} - ${prompt_basic} ${e.message}`);
                 } finally {
-                    try {
-                        await spinner.animate(false);
-                    } catch (e) {
-                    }
+                    // try {
+                    //     await spinner.animate(false);
+                    // } catch (e) {
+                    // }
                 }
             }
             printBold(`Saving midjourney IDs down to disk - total successful downloads: ${totalDownloads}`);
@@ -334,7 +354,7 @@ async function downloadMidjourneyAllImages() {
             await writeFile(hashFile, json, 'utf8');
         } else if (response.status === 403) {
             // cookie is likely invalid or expired
-            printError(`Forbidden error likely due to an invalid or expired session token cookie.`);
+            printError(`🚫  Forbidden error likely due to an invalid or expired session token cookie.`);
             currentState = STATE_USER_CONFIG;
             await verifyConfig();
             currentState = STATE_DOWNLOADING;
@@ -367,9 +387,8 @@ async function downloadMidjourneyAllImages() {
 
         currentState = STATE_USER_CONFIG;
         await verifyConfig();
-        currentState = STATE_IDLE;
 
-        persistentMessageId = startPersistentMessage("Press Escape to Quit");
+        // persistentMessageId = startPersistentMessage("Press Escape to Quit");
 
         // Reset the terminal styles
         // term.reset();
