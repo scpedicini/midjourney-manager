@@ -24,27 +24,35 @@ Please note that the session-token should be good for several weeks. When it exp
 
 For detailed instructions, watch this [video tutorial](#) :movie_camera:
 
-You can run the CLI tool by either double-clicking on it, or by executing the command: `./midjourney-downloader` (for Mac) or `midjourney-downloader.exe` (for Windows) in a terminal.
+You can run the CLI tool by either double-clicking on it, or by manually running the tool in a DOS prompt or terminal: `./mj-downloader` (for Mac) or `mj-downloader.exe` (for Windows).
 
 ## :hammer_and_wrench: Building Yourself
 
-If you'd like to build the project yourself, make sure you have Node v16 installed. Then use the npm scripts `mac-build` and `win-build` to create the respective bundle for Mac and Windows. Please note that due to the bundling tool used (caxa), it is necessary to create the respective bundle for Mac/Windows on that native operating system.
+If you'd like to build the project yourself, make sure you have Node v16 installed. Then use the npm scripts `mac-build` and `win-build` to create the respective bundle for Mac and Windows. Please note that due to the bundling tool used (`caxa`), it is necessary to build the respective compiled executable for Mac/Windows on the native target's OS.
 
 ## :question: FAQ
 
-**Q: I'm getting errors while downloading, what do I do?**
-A: Depending on how much load Midjourney's site is under, it is not uncommon to receive time outs and other types of failures while downloading images. If this happens, Midjourney-Manager will skip these images and continue on. You can re-run the tool and it will pick up where it left off and try to fetch these images again.
+### I'm getting errors while downloading, what do I do?
 
-**Q: Will it download the same images?**
-A: No, Midjourney-Manager tracks downloads via a file called `downloaded.json` which exists in the download directory. This means that even if you move the images to other folders, as long as you keep the `downloaded.json` file around, it won't download duplicate files.
+Depending on how much load Midjourney's site is under, it is not uncommon to receive time outs and other types of failures while downloading images. If this happens, Midjourney-Manager will skip these images and continue on. You can re-run the tool and it will pick up where it left off and try to fetch these images again.
 
-**Q: Where is my image information?**
-A: You can see the information embedded in an image using a dedicated tool such as [exiftool](#), or via most popular image editors. If you choose to generate sidecar files, every image will have a corresponding metadata file entry with the same name ending in `.json`.
+### Will it download the same images?
 
-**Q
+No, Midjourney-Manager tracks downloads via a file called `downloaded.json` which exists in the download directory. This means that even if you move the images to other folders, as long as you keep the `downloaded.json` file around, it won't download duplicate files.
 
-: What are sidecar files?**
-A: Sidecar files are 1-1 files that include information related to the generation of the image. These include details such as:
+### Where is my image information?
+
+You can see the information embedded in an image using a dedicated tool such as [exiftool](https://exiftool.org), or via most popular image editors. If you choose to generate sidecar files, every image will have a corresponding metadata file entry with the same name ending in `.json`.
+
+![Exiftool CLI Output](assets/exiftool.jpg)
+
+### How do I exit this dumb program?
+
+You can exit the tool at any time by pressing `Escape` on your keyboard. This will stop the tool from downloading any more images, and will save the current state of the `downloaded.json` file.
+
+### What are sidecar files?
+
+Sidecar files are 1-1 files that include information related to the generation of the image. These include details such as:
 - Version used (v3, v4, v5.1, niji, etc)
 - Resolution
 - Aspect ratio
@@ -52,4 +60,10 @@ A: Sidecar files are 1-1 files that include information related to the generatio
 - Seed
 - etc
 
-We hope you enjoy using Midjourney-Manager! If you have any issues, suggestions or general feedback, don't hesitate to reach out. Happy creating! :sparkles:
+### Why don't you download images in parallel?
+
+Because you touch yourself at night. That's why. :smirk:
+
+## :construction_worker: Contributing
+
+If you have any issues, suggestions or general feedback, don't hesitate to reach out or submit a pull request. Happy downloading! :sparkles: :sparkles: :sparkles:

@@ -328,7 +328,7 @@ async function downloadMidjourneyAllImages() {
                         await safeRunAsync(async () => await spinner.animate(false));
                         // write a checkbox emoji in the terminal at the saved position
                         term.saveCursor();
-                        term.moveTo(position.x, position.y - 1);
+                        term.moveTo(position.x, position.y - (position.y === term.height ? 1 : 0));
                         term('✅');
                         term.restoreCursor();
 
@@ -347,6 +347,7 @@ async function downloadMidjourneyAllImages() {
                     //     await spinner.animate(false);
                     // } catch (e) {
                     // }
+
                 }
             }
             printBold(`Saving midjourney IDs down to disk - total successful downloads: ${totalDownloads}`);
@@ -388,7 +389,7 @@ async function downloadMidjourneyAllImages() {
         currentState = STATE_USER_CONFIG;
         await verifyConfig();
 
-        // persistentMessageId = startPersistentMessage("Press Escape to Quit");
+        persistentMessageId = startPersistentMessage("Press Escape to Quit");
 
         // Reset the terminal styles
         // term.reset();
