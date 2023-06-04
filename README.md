@@ -37,7 +37,7 @@ Before running the application, you'll need the following information:
 2. Install the dependencies using `npm install`
 3. Run the tool using `npm start`
 
-**For detailed instructions, watch this [video tutorial](#) :movie_camera:**
+**For detailed instructions, watch the following video tutorial :movie_camera:**
 
 
 
