@@ -37,10 +37,12 @@ Before running the application, you'll need the following information:
 2. Install the dependencies using `npm install`
 3. Run the tool using `npm start`
 
-
-
-
 **For detailed instructions, watch this [video tutorial](#) :movie_camera:**
+
+
+
+
+https://github.com/scpedicini/midjourney-manager/assets/2040540/06261501-8e3b-4040-821b-e308b459de2b
 
 
 
