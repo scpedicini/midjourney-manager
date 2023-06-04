@@ -17,17 +17,33 @@ Due to the way that Midjourney's current profile works, it is impossible to sear
 
 ## :rocket: Getting Started
 
+
+Before running the application, you'll need the following information:
+
+- `__Secure-next-auth.session-token` (You can get this cookie from the Cookie tab in Chrome/Firefox developer console. Watch the video tutorial below for more details)
+
+- User Id (Search for any call that says "user_id" in the Network tab. It should be in the form of GUID (e.g. `XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX`). Copy this value.
+
+> **Note:** Please note that the session-token should be good for several weeks. When it expires, you will receive a warning message, and will need to grab the newest one from your browser.
+
+### Using the native CLI tool
+
 1. Under releases, download the version suitable for your OS (Win or Mac). We recommend placing this file in the directory where you'd like to have your images downloaded to. :file_folder: Double-click to unzip the file which will be named `mj-downloader` or `mj-downloader.exe` depending on your OS.
+2. You can run the CLI tool by either double-clicking on it, or by manually running the tool in a DOS prompt or terminal: `./mj-downloader` (for Mac) or `mj-downloader.exe` (for Windows).
 
-2. Before running the application, you'll need the following information:
-    - `__Secure-next-auth.session-token` (You can get this cookie from the Cookie tab in Chrome/Firefox developer console. Watch the video tutorial below for more details)
-    - User Id (Search for any call that says "user_id" in the Network tab. It should be in the form of GUID (e.g. `XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX`). Copy this value.
+### Using the Node CLI tool
 
-Please note that the session-token should be good for several weeks. When it expires, you will receive a warning message, and will need to grab the newest one from your browser.
+1. Clone the repository to your local machine using `git clone https://scpedicini/midjourney-manager.git`
+2. Install the dependencies using `npm install`
+3. Run the tool using `npm start`
 
-For detailed instructions, watch this [video tutorial](#) :movie_camera:
 
-You can run the CLI tool by either double-clicking on it, or by manually running the tool in a DOS prompt or terminal: `./mj-downloader.Mac.zip` (for Mac) or `mj-downloader.exe` (for Windows).
+
+
+**For detailed instructions, watch this [video tutorial](#) :movie_camera:**
+
+
+
 
 ## :hammer_and_wrench: Building Yourself
 

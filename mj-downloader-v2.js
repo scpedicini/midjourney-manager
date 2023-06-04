@@ -98,9 +98,17 @@ function getPreviousConfig() {
 async function verifyConfig() {
     const prevConfigData = getPreviousConfig();
 
+    let { sessionToken, userId, outputLocation, createSidecarJson } = prevConfigData;
+
+    // check to see if the user passed "--hide-config" as an argument
+    if (process.argv.includes('--hide-config')) {
+        sessionToken = sessionToken.substring(0, 5) + '...';
+        userId = userId.substring(0, 5) + '...';
+    }
+
     printBold(`Setup configuration (press enter to skip and keep current value)`);
     printBold(`For details on how to setup the downloader, please visit https://github.com/scpedicini/midjourney-manager`);
-    print(`\nUser Id: (Currently: ${prevConfigData.userId})`);
+    print(`\nUser Id: (Currently: ${userId})`);
     const newUserId = await term.inputField().promise
     if (newUserId.length > 0) {
         configData.userId = newUserId;
@@ -108,7 +116,7 @@ async function verifyConfig() {
         configData.userId = prevConfigData.userId;
     }
 
-    print(`\n__Secure-next-auth.session-token Cookie from https://midjourney.com/app (Currently: ${prevConfigData.sessionToken})`);
+    print(`\n__Secure-next-auth.session-token Cookie from https://midjourney.com/app (Currently: ${sessionToken})`);
     const newSessionToken = await term.inputField().promise
     if (newSessionToken.length > 0) {
         configData.sessionToken = newSessionToken;
