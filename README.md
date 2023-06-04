@@ -1,6 +1,9 @@
 # Midjourney-Manager 
 
-Welcome to Midjourney-Manager, your friendly command-line application for managing your generative images! Available for both Windows and Mac, this application is designed to help you keep track of your creations, download them and embed information about each image including the discord channel, the prompt used, the job ID, and more. It even downloads upscales and image collages aka the image grids for you! :framed_picture:
+Welcome to Midjourney-Manager, a command-line application for managing and downloading all your generative images from Midjourney! Available for both Windows and Mac, this application is designed to help you keep track of your creations, download them and embed information about each image including the discord channel, the prompt used, the job ID, and more. It even downloads upscales and image collages aka the image grids for you! :framed_picture:
+
+
+![mj-downloader-proc](https://github.com/scpedicini/midjourney-manager/assets/2040540/1db1419c-d010-4702-b98c-cf0a3b4ac0b8)
 
 ## :star: Features
 
@@ -79,7 +82,6 @@ xattr -d com.apple.quarantine ./mj-downloader
 ### Why aren't the images being downloaded in parallel?
 
 Because you touch yourself at night. That's why.
-
 
 ## :construction_worker: Contributing
 
