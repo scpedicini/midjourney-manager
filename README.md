@@ -53,6 +53,12 @@ If you'd like to build the project yourself, make sure you have Node v16 install
 
 ## :question: FAQ
 
+### Why'd you make this in the first place?
+
+Because the home page Downloader can sometimes be a bit fiddly and also I was clicking the download button more times than when I play Diablo and I just LOVE TENDONITIS. :sob: 
+
+Plus, I wanted to be able to embed information about each image in the image itself so that I could easily search for images based on the prompt, seed, etc. :mag:
+
 ### I'm getting errors while downloading, what do I do?
 
 Depending on how much load Midjourney's site is under, it is not uncommon to receive time outs and other types of failures while downloading images. If this happens, Midjourney-Manager will skip these images and continue on. You can re-run the tool and it will pick up where it left off and try to fetch these images again.
