@@ -1,5 +1,8 @@
 # Midjourney-Manager 
 
+> :warning: **IMPORTANT UPDATE**: It looks like Midjourney has moved over to using Cloudflare. As a result, the TLS/browser fingerprinting will likely prevent this script from working unless we move over to a headless browser solution. If you're having difficulties, don't forget to raise the issue of providing proper API support to the devs over at Midjourney.
+
+
 Welcome to Midjourney-Manager, a command-line application for managing and downloading all your generative images from Midjourney! Available for both Windows and Mac, this application is designed to help you keep track of your creations, download them and embed information about each image including the discord channel, the prompt used, the job ID, and more. It even downloads upscales and image collages aka the image grids for you! :framed_picture:
 
 
