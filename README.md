@@ -1,5 +1,7 @@
 # Midjourney-Manager 
 
+> :update: **IMPORTANT UPDATE 2024**: The new alpha version of the Midjourney mostly renders this script obsolete, so the repo is now archived.
+
 > :warning: **IMPORTANT UPDATE**: It looks like Midjourney has moved over to using Cloudflare. As a result, the TLS/browser fingerprinting will likely prevent this script from working without switching to a headless browser solution. If you're having difficulties, don't forget to raise the issue of providing proper API support to the devs over at Midjourney. :sob:
 
 
