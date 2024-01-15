@@ -1,3 +1,7 @@
+// Use MWS to setup a fake server that returns the JSON data from the dashboard
+import '../server.js'
+
+
 import fetch from 'node-fetch';
 import {readFileSync, existsSync, unlinkSync} from "fs";
 import {writeFile} from 'fs/promises'
@@ -21,6 +25,7 @@ import { execSync } from 'child_process';
 import dotenv from 'dotenv';
 import {fetchBinary, safeRunAsync, throwIfUndefinedOrNull, sleep} from "../utils.js";
 import {createHeaderBlock, generateUniqueFilename} from "../mj-helper.js";
+import {closeBrowser, downloadImage, initBrowser} from "../browser-utils.js";
 dotenv.config();
 
 // verify we have process env vars for MIDJOURNEY_COOKIE and USER_ID
@@ -103,20 +108,30 @@ async function downloadMidjourneyAllImages() {
     // last pageNumber = 1834
     let totalDownloads = 0;
     let totalImages = 0;
-    for (let i = 0; i <= 60; i++) {
+    for (let i = 0; i <= 1; i++) {
 
         const userId = process.env.USER_ID;
 
         // each of these URLs returns at most 50 jobs each consisting of 50 images (2500 images)
         // if you've generated more than 5000 images, the oldestUrl and newestUrl will not
         // overlap and those images will not be downloaded (this is a current limitation of the mj API)
+        /*
         const jsonUrlTemplateNewest = i === 0 ? `https://www.midjourney.com/api/app/recent-jobs/?amount=50&jobType=null&orderBy=new&user_id_ranked_score=null&jobStatus=completed&userId=${userId}&dedupe=true&refreshApi=0` :
             `https://www.midjourney.com/api/app/recent-jobs/?amount=50&jobType=null&orderBy=new&user_id_ranked_score=null&jobStatus=completed&userId=${userId}&dedupe=true&refreshApi=0&page=${i}`;
+        */
 
+        // https://www.midjourney.com/api/app/recent-jobs/?amount=35&dedupe=true&jobStatus=completed&orderBy=new&page=2&prompt=undefined&refreshApi=0&searchType=advanced&service=null&toDate=2023-07-02+00%3A49%3A41.421176&type=all&userId=878a9faf-25a6-4337-b3ae-39852c34c28d&user_id_ranked_score=null&_ql=todo&_qurl=https%3A%2F%2Fwww.midjourney.com%2Fapp%2F
+        /*
         const jsonUrlTemplateOldest = i === 0 ? `https://www.midjourney.com/api/app/recent-jobs/?amount=50&jobType=null&orderBy=oldest&user_id_ranked_score=null&jobStatus=completed&userId=${userId}&dedupe=true&refreshApi=0` :
             `https://www.midjourney.com/api/app/recent-jobs/?amount=50&jobType=null&orderBy=oldest&user_id_ranked_score=null&jobStatus=completed&userId=${userId}&dedupe=true&refreshApi=0&page=${i}`;
+        */
+
+        const jsonUrlTemplateNewest = `https://www.midjourney.com/api/app/recent-jobs/?amount=35&dedupe=true&jobStatus=completed&orderBy=new&page=${i}&prompt=undefined&refreshApi=0&searchType=advanced&service=null&type=all&userId=${userId}&user_id_ranked_score=null&_ql=todo&_qurl=https%3A%2F%2Fwww.midjourney.com%2Fapp%2F`;
+
 
         const jsonUrlTemplate = jsonUrlTemplateNewest;
+
+
 
         const response = await fetch(jsonUrlTemplate, { headers: createHeaderBlock(sessionToken) });
         if (response.ok) {
@@ -176,7 +191,8 @@ async function downloadMidjourneyAllImages() {
                             fileExt = downloadUrl.pathname.split('.').pop();
                             let localFile = generateUniqueFilename(outputDir, [`${dateFilePrefix}${prompt_basic}`], fileExt);
                             localFile = path.join(outputDir, localFile);
-                            await fetchBinary(downloadUrl, localFile);
+                            // await fetchBinary(downloadUrl, localFile);
+                            await downloadImage(downloadUrl, localFile);
                             local_files.push(localFile);
                         }
 
@@ -250,6 +266,10 @@ async function downloadMidjourneyAllImages() {
 
 
 (async () => {
+    await initBrowser();
+
     await downloadMidjourneyAllImages();
+
+    await closeBrowser();
     console.log("Finished");
 })();

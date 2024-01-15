@@ -2,7 +2,7 @@ import {PNG} from "pngjs";
 import fetch from "node-fetch";
 import fs, {createWriteStream} from "fs";
 import {pipeline} from "stream/promises";
-import {fileTypeFromBuffer} from "file-type";
+import {fileTypeFromBuffer, fileTypeFromFile} from "file-type";
 import terminalKitPackage from 'terminal-kit';
 import {debugLog} from "./terminal-helper.js";
 const { terminal: term  } = terminalKitPackage;
@@ -104,6 +104,11 @@ async function isBufferAnImage(buffer) {
     return result?.mime?.startsWith('image/');
 }
 
+async function isFileAnImage(local_file) {
+    const result = await fileTypeFromFile(local_file);
+    return result?.mime?.startsWith('image/');
+}
+
 async function safeRunAsync(func) {
     try {
         await func();
@@ -131,4 +136,5 @@ export {
     writePngToFile,
     safeRunAsync,
     safeRunSync,
+    isFileAnImage
 }

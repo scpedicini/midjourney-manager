@@ -19,8 +19,11 @@
     "dotenv": "^16.0.3",
     "exiftool-vendored": "^22.0.0",
     "file-type": "^18.4.0",
+    "jsonrepair": "^3.2.0",
+    "msw": "^1.2.2",
     "node-fetch": "^3.3.1",
     "pngjs": "^7.0.0",
+    "puppeteer": "^20.7.4",
     "terminal-kit": "^3.0.0"
   },
   "type": "module",

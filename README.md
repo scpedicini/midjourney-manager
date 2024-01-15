@@ -1,6 +1,6 @@
 # Midjourney-Manager 
 
-> :warning: **IMPORTANT UPDATE**: It looks like Midjourney has moved over to using Cloudflare. As a result, the TLS/browser fingerprinting will likely prevent this script from working unless we move over to a headless browser solution. If you're having difficulties, don't forget to raise the issue of providing proper API support to the devs over at Midjourney.
+> :warning: **IMPORTANT UPDATE**: It looks like Midjourney has moved over to using Cloudflare. As a result, the TLS/browser fingerprinting will likely prevent this script from working without switching to a headless browser solution. If you're having difficulties, don't forget to raise the issue of providing proper API support to the devs over at Midjourney. :sob:
 
 
 Welcome to Midjourney-Manager, a command-line application for managing and downloading all your generative images from Midjourney! Available for both Windows and Mac, this application is designed to help you keep track of your creations, download them and embed information about each image including the discord channel, the prompt used, the job ID, and more. It even downloads upscales and image collages aka the image grids for you! :framed_picture:
@@ -17,6 +17,10 @@ Welcome to Midjourney-Manager, a command-line application for managing and downl
 
 ## :exclamation: Limitations
 Due to the way that Midjourney's current profile works, it is impossible to search past the most recent 2500 generated images. Hence, we recommend you run this script on a daily/weekly basis to always ensure your work is backed up. :hourglass_flowing_sand:
+
+## :loudspeaker: Update 
+
+The old `mj-downloader.js` has been updated to use a headless browser solution in order to acquire the images. This is necessary due to Cloudflare. Unfortunately, this means that the tool is now slower than before. :turtle:
 
 ## :rocket: Getting Started
 
